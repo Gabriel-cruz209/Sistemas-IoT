@@ -2,8 +2,8 @@
 String frase = "Hello";
 
 void setup() {
-  pinMode(13, OUTPUT);
-  digitalWrite(13, LOW);
+  pinMode(7, OUTPUT);
+  digitalWrite(7, LOW);
 }
 
 void loop() {
@@ -61,15 +61,15 @@ const char* morseFor(char g) {
 }
 
 void ponto() {
-  digitalWrite(13, HIGH);
+  digitalWrite(7, HIGH);
   delay(200);
-  digitalWrite(13, LOW);
+  digitalWrite(7, LOW);
   delay(200);
 }
 
 void traço() {
-  digitalWrite(13, HIGH);
+  digitalWrite(7, HIGH);
   delay(3 * 200);
-  digitalWrite(13, LOW);
+  digitalWrite(7, LOW);
   delay(200);
 }
