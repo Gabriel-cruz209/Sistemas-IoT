@@ -1,4 +1,3 @@
-    
 # Importações
 from flask import Flask, render_template
 import serial
@@ -28,6 +27,8 @@ def control(led_num, action):
             command = 'A' if action == 'on' else 'a'
         elif led_num == '2':
             command = 'B' if action == 'on' else 'b'
+        elif led_num == '3':
+                command = 'C' if action == 'on' else 'c'
         if command:
             arduino.write(command.encode())
             return f"Comando '{command}' enviado para o LED {led_num}."
@@ -39,4 +40,3 @@ def control(led_num, action):
 # Execução do app Flask
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000, use_reloader=False)
-
