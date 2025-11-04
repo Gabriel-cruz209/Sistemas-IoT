@@ -7,67 +7,82 @@ int pinAmarelo = 4;
 int pinVermelho = 3;
 
 DHT dht(A0, DHT11);
-LiquidCrystal lcd(12,11,10,9,8,7);
+LiquidCrystal lcd(12, 11, 10, 9, 8, 7);
 float temperatura;
+float umidade;
 
 void setup() {
+  Serial.begin(9600); 
 
-pinMode(pinBuzzer, OUTPUT);
-pinMode(pinVerde, OUTPUT);
-pinMode(pinAmarelo, OUTPUT);
-pinMode(pinVermelho, OUTPUT);
+  pinMode(pinBuzzer, OUTPUT);
+  pinMode(pinVerde, OUTPUT);
+  pinMode(pinAmarelo, OUTPUT);
+  pinMode(pinVermelho, OUTPUT);
 
-dht.begin();
-lcd.begin(16, 2);
-lcd.clear();
-lcd.setCursor(0, 0);
-lcd.print("Temperatura: ");
-
+  dht.begin();
+  lcd.begin(16, 2);
+  lcd.clear();
 }
 
 void loop() {
 
-delay(2000);
-temperatura = dht.readTemperature();
-lcd.setCursor(0, 1);
-if (isnan(temperatura)) { 
-  lcd.print("ERRO NO SENSOR!");
-  digitalWrite(pinVerde, LOW);
-  digitalWrite(pinAmarelo, LOW);
-  digitalWrite(pinVermelho, LOW);
-  noTone(pinBuzzer);
-  }
-else if(temperatura <= 40) {
-  lcd.print(temperatura); 
-  digitalWrite(pinVerde, HIGH);
-  digitalWrite(pinAmarelo, LOW);
-  digitalWrite(pinVermelho, LOW);
-  noTone(pinBuzzer);
-  }
-else if(temperatura > 40 && temperatura < 60 ) {
-  lcd.print(temperatura); 
-  digitalWrite(pinVerde, LOW);
-  digitalWrite(pinAmarelo, HIGH);
-  digitalWrite(pinVermelho, LOW);
-  tone(pinBuzzer, 262, 1000);
-  delay(3000);
-  }
+  if (Serial.available() > 0) {
+    char command = Serial.read();
 
-else if (temperatura > 60 ) {
-  lcd.print(temperatura); 
-  digitalWrite(pinVerde, LOW);
-  digitalWrite(pinAmarelo, LOW);
-  digitalWrite(pinVermelho, HIGH);
-  tone(pinBuzzer, 400, 2000);
-  delay(500);
+    if (command == 'T') {
+      
+      temperatura = dht.readTemperature();
+      umidade = dht.readHumidity(); 
+
+      if (isnan(temperatura) || isnan(umidade)) {
+        Serial.println("ERRO");
+      } else {
+        Serial.print(temperatura);
+        Serial.print(";");
+        Serial.println(umidade);
+      }
+      
+      if (isnan(temperatura)) { 
+        lcd.clear();
+        lcd.print("ERRO NO SENSOR!");
+        digitalWrite(pinVerde, LOW);
+        digitalWrite(pinAmarelo, LOW);
+        digitalWrite(pinVermelho, LOW);
+        noTone(pinBuzzer);
+      }
+      else if (temperatura <= 40) {
+        lcd.clear();
+        lcd.setCursor(0, 0);
+        lcd.print("Temp: ");
+        lcd.print(temperatura);
+        
+        digitalWrite(pinVerde, HIGH);
+        digitalWrite(pinAmarelo, LOW);
+        digitalWrite(pinVermelho, LOW);
+        noTone(pinBuzzer);
+      }
+      else if (temperatura > 40 && temperatura < 60) {
+        lcd.clear();
+        lcd.setCursor(0, 0);
+        lcd.print("Temp: ");
+        lcd.print(temperatura);
+        
+        digitalWrite(pinVerde, LOW);
+        digitalWrite(pinAmarelo, HIGH);
+        digitalWrite(pinVermelho, LOW);
+        tone(pinBuzzer, 262, 500); 
+      }
+      else if (temperatura > 60) {
+        lcd.clear();
+        lcd.setCursor(0, 0);
+        lcd.print("Temp: ");
+        lcd.print(temperatura);
+        
+        digitalWrite(pinVerde, LOW);
+        digitalWrite(pinAmarelo, LOW);
+        digitalWrite(pinVermelho, HIGH);
+        tone(pinBuzzer, 400, 500);
+      }
+    }
   }
-
-else{
-  lcd.print("Error...");
-  digitalWrite(pinVerde, LOW);
-  digitalWrite(pinAmarelo, LOW);
-  digitalWrite(pinVermelho, LOW);
-  noTone(pinBuzzer);
-}
-
 }

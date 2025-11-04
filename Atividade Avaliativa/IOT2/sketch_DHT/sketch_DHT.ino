@@ -30,19 +30,7 @@ void loop() {
 
     // Estrutura switch para tratar os comandos
     switch (command) {
-      // Casos para controlar os LEDs (do projeto original)
-      case 'A':
-        digitalWrite(ledPinVerde, HIGH); // Liga LED 1 (Verde)
-        break;
-      case 'a':
-        digitalWrite(ledPinVerde, LOW); // Desliga LED 1 (Verde)
-        break;
-      case 'B':
-        digitalWrite(ledPinVrm, HIGH); // Liga LED 2 (Vermelho)
-        break;
-      case 'b':
-        digitalWrite(ledPinVrm, LOW); // Desliga LED 2 (Vermelho)
-        break;
+      
       
       // --- NOSSO NOVO COMANDO ---
       case 'T':

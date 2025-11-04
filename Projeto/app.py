@@ -1,42 +1,49 @@
-# Importações
-from flask import Flask, render_template
+from flask import Flask, render_template, jsonify
 import serial
 import time
 
-# Configuração da porta serial do Arduino
+# Tenta conectar ao Arduino 
 try:
-    arduino = serial.Serial('COM3', 9600, timeout=1)
-    time.sleep(2)  # tempo para estabilizar
+    # ATENÇÃO: Verifique a porta COM correta no seu IDE do Arduino [cite: 68, 69]
+    arduino = serial.Serial('COM4', 9600, timeout=1) 
+    time.sleep(2) # Espera a conexão serial estabilizar 
+    print("Arduino conectado com sucesso.")
 except serial.SerialException as e:
-    print(f"Erro ao conectar com o Arduino: {e}")
-    arduino = None
+    print(f"Erro ao conectar com o Arduino: {e}") 
+    arduino = None 
 
-app = Flask(__name__)
+app = Flask(__name__) 
 
-# Rota principal que renderiza a página HTML
+# Rota principal: Renderiza a página index.html [cite: 14]
 @app.route('/')
 def index():
     return render_template('index.html')
 
-# Rota que recebe comandos do HTML e envia ao Arduino
-@app.route('/control/<led_num>/<action>')
-def control(led_num, action):
-    if arduino:
-        command = ''
-        if led_num == '1':
-            command = 'A' if action == 'on' else 'a'
-        elif led_num == '2':
-            command = 'B' if action == 'on' else 'b'
-        elif led_num == '3':
-                command = 'C' if action == 'on' else 'c'
-        if command:
-            arduino.write(command.encode())
-            return f"Comando '{command}' enviado para o LED {led_num}."
-        else:
-            return "Comando inválido."
-    else:
-        return "Arduino não conectado."
 
-# Execução do app Flask
+# --- NOSSA NOVA ROTA ---
+# Rota para buscar os dados do sensor
+@app.route('/get_data')
+def get_data():
+    if arduino:
+        try:
+            arduino.write(b'T') # Envia o comando 'T' para pedir os dados
+            time.sleep(0.1) # Dá um tempo para o Arduino responder
+            
+            data_line = arduino.readline().decode('utf-8').strip()
+            
+            if data_line and data_line != "ERRO" and ";" in data_line:
+                # Separa os valores "temp;umid"
+                temperatura, umidade = data_line.split(';')
+                return jsonify(temperatura=float(temperatura), umidade=float(umidade))
+            else:
+                return jsonify(error="Falha ao ler sensor"), 500
+
+        except Exception as e:
+            print(f"Erro na leitura serial: {e}")
+            return jsonify(error="Erro serial"), 500
+            
+    return jsonify(error="Arduino nao conectado"), 500
+
+
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000, use_reloader=False)
+    app.run(debug=True, host='0.0.0.0', port=5000)
